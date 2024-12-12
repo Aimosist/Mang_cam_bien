@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mang cam bien</title>
+
+    <!-- Link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        .controls-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            font-size: 24px;
+            padding: 15px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+        }
+        #charts {
+            display: flex;
+            flex-direction: column;
+            flex: 7;
+            gap: 10px;
+        }
+        .chart-container {
+            width: 95%;
+            flex: 1;
+            min-height: 225px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 39px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            flex: 3;
+            max-width: 400px;
+            margin-right: 90px;
+        }
+
+        .status-box {
+            width: 100%;
+            height: 80px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            font-size: 30px;
+            color: #333;
+        }
+
+        .status-box i {
+            margin-right: 20px;
+            font-size: 30px;
+        }
+
+        #message {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .modal-header {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div id="charts">
+        <div class="chart-container" id="tempChart"></div>
+        <div class="chart-container" id="humChart"></div>
+        <div class="chart-container" id="lightChart"></div>
+    </div>
+
+    <div id="controls">
+        <h1 style="font-size: 39px; text-align: center;">Chỉ số hiện tại</h1>
+        <br>
+        <div class="status-box" id="temperature-box">
+            <i class="fas fa-thermometer-half"></i>
+            <span id="temp">...°C</span>
+        </div>
+
+        <div class="status-box" id="humidity-box">
+            <i class="fas fa-tint"></i>
+            <span id="humidity">...%</span>
+        </div>
+
+        <div class="status-box" id="light-box">
+            <i class="fas fa-sun"></i>
+            <span id="light">... Lux</span>
+        </div>
+        <br>
+        <br>
+
+        <h1 style="font-size: 39px; text-align: center;">Điều khiển LED</h1>
+
+        <div class="controls-container">
+            <button type="button" class="btn control-btn fan" data-device="LED1" data-state="off" onclick="toggleState(this)" 
+                style="border-radius: 8px; width: 80px; height: 80px; background-color: transparent; border: 3px solid gray; color: #f0f0f0;">
+                <i class="fas fa-wind"></i>
+            </button>
+
+            <button type="button" class="btn control-btn humidifier" data-device="LED2" data-state="off" onclick="toggleState(this)"
+                style="border-radius: 8px; width: 80px; height: 80px; background-color: transparent; border: 3px solid gray; color: #f0f0f0;">
+                <i class="fas fa-water"></i>
+            </button>
+
+            <button type="button" class="btn control-btn light" data-device="LED3" data-state="off" onclick="toggleState(this)"
+                style="border-radius: 8px; width: 80px; height: 80px; background-color: transparent; border: 3px solid gray; color: #f0f0f0;">
+                <i class="fas fa-lightbulb"></i>
+            </button>
+        </div>
+          
+        <!-- Nút Search -->
+<button id="searchButton1" class="btn btn-primary" style="margin-top: 20px; font-size: 22px; padding: 8px;">Search</button>
+
+<!-- Nút MUA -->
+<button id="searchButton2" class="btn btn-primary" style="margin-top: 20px; font-size: 22px; padding: 8px;">DB2</button>
+
+<script>
+    // Thêm sự kiện cho nút Search
+    document.getElementById("searchButton1").addEventListener("click", function() {
+        window.location.href = "search.html"; // Đường dẫn tương đối
+    });
+
+    // Thêm sự kiện cho nút MUA
+    document.getElementById("searchButton2").addEventListener("click", function() {
+        window.location.href = "db2.html"; 
+    });
+</script>
+       
+
+
+     
+    </div>
+
+<script>
+    function toggleState(button) {
+        const device = button.getAttribute('data-device');
+        const currentState = button.getAttribute('data-state');
+        const newState = currentState === 'off' ? 'on' : 'off';
+
+        // Cập nhật giao diện
+        button.setAttribute('data-state', newState);
+        button.style.backgroundColor = newState === 'on' ? 'dodgerblue' : 'red';
+
+        // Gửi yêu cầu tới server Node.js
+        fetch('/control-led', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ device: device, action: newState.toUpperCase() }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+
+   
+    function updateCharts(data) {
+        if (Array.isArray(data) && data.length > 0) {
+            const latestData = [...data].reverse().slice(0, 8); // Đảo ngược mảng và lấy 8 bản ghi đầu
+            drawCharts(latestData); // Gọi hàm drawCharts để vẽ biểu đồ
+        } else {
+            console.error('Dữ liệu không hợp lệ hoặc không đủ.');
+        }
+    }
+
+    function fetchData() {
+        fetch('/api/sensor_data/latest')
+            .then(response => response.json())
+            .then(data => {
+                updateCharts(data.slice(-8)); // Cập nhật biểu đồ với 8 bản ghi mới nhất
+                updateCurrentValues(data.slice(-1)[0]); // Cập nhật chỉ số hiện tại
+            })
+            .catch(error => console.error('Lỗi khi lấy dữ liệu sensor:', error));
+    }
+
+    function updateCurrentValues(latestData) {
+        if (latestData) {
+            $('#temp').text(`${latestData.Temp}°C`);
+            $('#humidity').text(`${latestData.Hum}%`);
+            $('#light').text(`${latestData.Light} Lux`);
+        }
+    }
+
+    function drawCharts(data) {
+        // Biểu đồ nhiệt độ
+        const tempData = google.visualization.arrayToDataTable([
+            ['Time', 'Temperature', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.Temp, item.Temp.toString()])
+        ]);
+        const tempOptions = {
+            title: 'Nhiệt độ hiện tại (°C)',
+            curveType: 'function',
+            colors: ['red'],
+            legend: { position: 'none' },
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+        const tempChart = new google.visualization.LineChart(document.getElementById('tempChart'));
+        tempChart.draw(tempData, tempOptions);
+
+        // Biểu đồ độ ẩm
+        const humData = google.visualization.arrayToDataTable([
+            ['Time', 'Humidity', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.Hum, item.Hum.toString()])
+        ]);
+        const humOptions = {
+            title: 'Độ ẩm hiện tại (%)',
+            curveType: 'function',
+            colors: ['cyan'],
+            legend: { position: 'none' },
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+        const humChart = new google.visualization.LineChart(document.getElementById('humChart'));
+        humChart.draw(humData, humOptions);
+
+        // Biểu đồ ánh sáng
+        const lightData = google.visualization.arrayToDataTable([
+            ['Time', 'Light', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.Light, item.Light.toString()])
+        ]);
+        const lightOptions = {
+            title: 'Ánh sáng hiện tại (Lux)',
+            curveType: 'function',
+            colors: ['yellow'],
+            legend: { position: 'none' },
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+        const lightChart = new google.visualization.LineChart(document.getElementById('lightChart'));
+        lightChart.draw(lightData, lightOptions);
+    }
+
+    // Tải biểu đồ khi thư viện Google Charts đã sẵn sàng
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(() => {
+        fetchData(); // Lần đầu tiên tải dữ liệu
+        setInterval(fetchData, 5000); // Cập nhật dữ liệu mỗi 5 giây
+    });
+</script>
+
+</body>
+</html>

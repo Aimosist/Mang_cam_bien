@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mang cam bien</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #closeButton {
+        font-size: 18px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        align-self: flex-start;
+        margin-bottom: 20px;
+    }
+    #content {
+        display: flex;
+        width: 100%;
+        gap: 20px;
+    }
+    .column {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 210px;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        background-color: #f9f9f9;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    #currentValue {
+        flex: 1;
+    }
+    #aqiChart {
+        flex: 2;
+    }
+    #alertSection {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .alert-icon {
+        font-size: 236px;
+        color: green;
+    }
+    .blink {
+        animation: blink-animation 1s steps(5, start) infinite;
+        color: red;
+    }
+    @keyframes blink-animation {
+        to {
+            visibility: hidden;
+        }
+    }
+</style>
+
+</head>
+<body>
+       <button id="closeButton" onclick="window.location.href='index.html';">X</button>
+
+
+<div id="content" style="display: flex; justify-content: space-between;">
+    <!-- MUA Hiện Tại -->
+    <div class="column" id="currentValue1" style="flex: 33%;">
+        <h3 style="font-size: 28px; margin: 0;">MUA Hiện Tại (mm)</h3>
+        <div id="latestMUA" style="font-size: 99px; margin-top: 10px;">Đang cập nhật...</div>
+    </div>
+
+    <!-- GIO Hiện Tại -->
+    <div class="column" id="currentValue2" style="flex: 33%;">
+        <h3 style="font-size: 28px; margin: 0;">GIO Hiện Tại (km/h)</h3>
+        <div id="latestGIO" style="font-size: 99px; margin-top: 10px;">Đang cập nhật...</div>
+    </div>
+
+    <!-- NANG Hiện Tại -->
+    <div class="column" id="currentValue3" style="flex: 33%;">
+        <h3 style="font-size: 28px; margin: 0;">NANG Hiện Tại (W/m²)</h3>
+        <div id="latestNANG" style="font-size: 99px; margin-top: 10px;">Đang cập nhật...</div>
+    </div>
+</div>
+
+<!-- Hàng dưới: Biểu đồ MUA, NANG, GIO -->
+<div id="charts" style="display: flex; justify-content: space-between; width: 100%; gap: 0px; margin-top: 5px;">
+    <!-- Biểu đồ MUA -->
+    <div class="chart-container" id="muaChart" style="flex: 1; height: 399px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+    </div>
+     
+    
+    
+    <!-- Biểu đồ GIO -->
+    <div class="chart-container" id="gioChart" style="flex: 1; height: 399px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+    </div>
+
+    <!-- Biểu đồ NANG -->
+    <div class="chart-container" id="nangChart" style="flex: 1; height: 399px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+    </div>
+
+    
+</div>
+
+
+
+<script>
+
+
+
+// Tải Google Charts trước khi sử dụng
+google.charts.load('current', { packages: ['corechart'] });
+
+let sensorData = [];
+
+// Hàm vẽ biểu đồ và cập nhật bảng
+function drawCharts(data) {
+    // Đảm bảo Google Charts đã tải xong trước khi vẽ biểu đồ
+    google.charts.setOnLoadCallback(() => {
+        // Đảo ngược dữ liệu để hiển thị mới nhất ở bên trái
+        data.reverse();
+
+        // Biểu đồ MUA
+        const muaData = google.visualization.arrayToDataTable([
+            ['Time', 'MUA', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.MUA, item.MUA.toString()])
+        ]);
+
+        const muaOptions = {
+            title: 'Biểu đồ MUA (mm)',
+            curveType: 'function',
+            legend: { position: 'none' },
+            colors: ['gray'],
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+
+        const muaChart = new google.visualization.LineChart(document.getElementById('muaChart'));
+        muaChart.draw(muaData, muaOptions);
+
+        // Biểu đồ NANG
+        const nangData = google.visualization.arrayToDataTable([
+            ['Time', 'NANG', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.NANG, item.NANG.toString()])
+        ]);
+
+        const nangOptions = {
+            title: 'Biểu đồ NANG (W/m²)',
+            curveType: 'function',
+            legend: { position: 'none' },
+            colors: ['orange'],
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+
+        const nangChart = new google.visualization.LineChart(document.getElementById('nangChart'));
+        nangChart.draw(nangData, nangOptions);
+
+        // Biểu đồ GIO
+        const gioData = google.visualization.arrayToDataTable([
+            ['Time', 'GIO', { role: 'annotation' }],
+            ...data.map(item => [item.Time, item.GIO, item.GIO.toString()])
+        ]);
+
+        const gioOptions = {
+            title: 'Biểu đồ GIO (km/h)',
+            curveType: 'function',
+            legend: { position: 'none' },
+            colors: ['blue'],
+            annotations: {
+                textStyle: {
+                    fontSize: 20,
+                    color: 'black',
+                    auraColor: 'none'
+                }
+            }
+        };
+
+        const gioChart = new google.visualization.LineChart(document.getElementById('gioChart'));
+        gioChart.draw(gioData, gioOptions);
+    });
+}
+
+// Cập nhật bảng và thông số với dữ liệu mới nhất
+function updateLatestMUA() {
+    const latest = sensorData[0];  // Lấy dữ liệu mới nhất (phần tử đầu tiên)
+    document.getElementById('latestMUA').textContent = latest ? latest.MUA : 'Không có dữ liệu';
+}
+
+function updateLatestGIO() {
+    const latest = sensorData[0];  // Lấy dữ liệu mới nhất (phần tử đầu tiên)
+    document.getElementById('latestGIO').textContent = latest ? latest.GIO : 'Không có dữ liệu';
+}
+
+function updateLatestNANG() {
+    const latest = sensorData[0];  // Lấy dữ liệu mới nhất (phần tử đầu tiên)
+    document.getElementById('latestNANG').textContent = latest ? latest.NANG : 'Không có dữ liệu';
+}
+
+// Hàm fetchData để lấy dữ liệu mới nhất từ API
+function fetchData() {
+    fetch('/api/sensor_data/latest1')
+        .then(response => response.json())
+        .then(data => {
+            console.log("Dữ liệu từ API:", data); // Kiểm tra dữ liệu từ API
+            sensorData = data;  // Lưu lại tất cả dữ liệu trả về từ API
+            updateLatestMUA();  // Cập nhật thông số MUA mới nhất
+            updateLatestGIO();  // Cập nhật thông số GIO mới nhất
+            updateLatestNANG(); // Cập nhật thông số NANG mới nhất
+            updateCharts(sensorData.slice(0, 3));  // Cập nhật biểu đồ với 3 giá trị đầu tiên (mới nhất)
+        })
+        .catch(error => console.error('Lỗi khi lấy dữ liệu sensor:', error));
+}
+
+// Cập nhật biểu đồ
+function updateCharts(data) {
+    drawCharts(data);  // Cập nhật biểu đồ với dữ liệu mới nhất
+}
+
+// Gọi fetchData khi trang được tải
+document.addEventListener('DOMContentLoaded', () => {
+    fetchData();
+    setInterval(fetchData, 5000); // Cập nhật dữ liệu mỗi 5 giây
+});
+
+
+
+</script>
+</body>
+</html>
